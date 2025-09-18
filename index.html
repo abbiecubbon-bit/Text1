@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Text Pressure Widget</title>
+
+<!-- Google Font: Poppins Black -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@900&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #text-pressure-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    text-align: center;
+    user-select: none;
+  }
+
+  h1 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 900;
+    font-size: 100px;
+    line-height: 1;
+    display: inline-block;
+    margin: 0;
+    white-space: nowrap;
+    text-transform: uppercase;
+    transform-origin: center top;
+  }
+
+  h1 span {
+    display: inline-block;
+    transition: font-variation-settings 0.2s, opacity 0.2s, transform 0.2s;
+  }
+</style>
+</head>
+<body>
+
+<div id="text-pressure-container">
+  <h1 id="text-pressure-title"></h1>
+</div>
+
+<script>
+  // Text & settings
+  const text = 'Hello, you';
+  const minFontSize = 100;
+
+  const container = document.getElementById('text-pressure-container');
+  const title = document.getElementById('text-pressure-title');
+
+  // Create spans for each character
+  const chars = text.split('');
+  const spans = [];
+  chars.forEach(char => {
+    const span = document.createElement('span');
+    span.textContent = char;
+    title.appendChild(span);
+    spans.push(span);
+  });
+
+  // Track mouse
+  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const cursor = { x: mouse.x, y: mouse.y };
+
+  window.addEventListener('mousemove', e => {
+    cursor.x = e.clientX;
+    cursor.y = e.clientY;
+  });
+
+  // Distance calculation
+  const dist = (a, b) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Animate effect
+  function animate() {
+    mouse.x += (cursor.x - mouse.x) / 15;
+    mouse.y += (cursor.y - mouse.y) / 15;
+
+    const titleRect = title.getBoundingClientRect();
+    const maxDist = titleRect.width / 2;
+
+    spans.forEach(span => {
+      const rect = span.getBoundingClientRect();
+      const charCenter = {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2
+      };
+      const d = dist(mouse, charCenter);
+
+      const getAttr = (distance, minVal, maxVal) => {
+        const val = maxVal - Math.abs((maxVal * distance) / maxDist);
+        return Math.max(minVal, val + minVal);
+      };
+
+      const wdth = Math.floor(getAttr(d, 100, 200)); // width
+      const wght = Math.floor(getAttr(d, 400, 900)); // weight
+      const italVal = getAttr(d, 0, 0); // no italic
+      const alphaVal = 1; // full opacity
+
+      span.style.opacity = alphaVal;
+      span.style.fontVariationSettings = `'wght' ${wght}, 'wdth' ${wdth}, 'ital' ${italVal}`;
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // Set font size to container
+  function setFontSize() {
+    title.style.fontSize = minFontSize + 'px';
+  }
+
+  window.addEventListener('resize', setFontSize);
+  setFontSize();
+</script>
+
+</body>
+</html>
